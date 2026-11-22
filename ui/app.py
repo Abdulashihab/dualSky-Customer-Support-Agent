@@ -2,8 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Streamlit runs this file from the ui folder, so we add the project folder
-# to Python's search path. Without this, "from src..." would not work.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -11,10 +9,21 @@ import streamlit as st
 
 from src.agent.agent import chat_turn
 from src.auth.login import request_otp, verify_otp
+from src.setup import ensure_ready                # <--- 1. ADD THIS IMPORT
 from src.tools.account import get_account
 from src.tools.work_orders import get_work_orders
 
+
+@st.cache_resource                               # <--- 2. ADD THESE 5 LINES
+def init_backend():
+    """Build SQLite DB and Chroma search index once when the server boots."""
+    return ensure_ready()
+
+
+init_backend()                                   # <--- 3. ADD THIS LINE
+
 st.set_page_config(page_title="Dualsky Customer Support", page_icon="📡", layout="wide")
+
 
 
 def apply_dualsky_theme():
